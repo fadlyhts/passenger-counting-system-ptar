@@ -32,7 +32,7 @@ app.use(notFound);
 app.use(errorHandler);
 
 // Database connection and server startup
-const PORT = config.PORT || 3000;
+const PORT = config.PORT || 80;
 
 const startServer = async () => {
     try {

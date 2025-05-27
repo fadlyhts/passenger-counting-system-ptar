@@ -1,6 +1,7 @@
 const { PassengerRecord, Device, DriverMobilSession, Mobil, Driver } = require('../models');
 const { formatResponse, formatError } = require('../utils');
 const { sequelize } = require('../config/database');
+const { Op } = require('sequelize');
 
 /**
  * Record a new passenger from ESP32
@@ -36,6 +37,23 @@ const recordPassenger = async (req, res) => {
             last_sync: new Date()
         }, { transaction });
         
+        // Check if the same RFID has been recorded in the last 5 minutes
+        const fiveMinutesAgo = new Date(new Date() - 5 * 60 * 1000);
+        const recentRecord = await PassengerRecord.findOne({
+            where: {
+                rfid_code,
+                timestamp: {
+                    [Op.gte]: fiveMinutesAgo
+                }
+            },
+            transaction
+        });
+        
+        if (recentRecord) {
+            await transaction.rollback();
+            return res.status(400).json(formatError(null, 'This RFID has already been recorded in the last 5 minutes', 400));
+        }
+        
         // Find active session for the device's mobil
         const activeSession = await DriverMobilSession.findOne({
             where: {
@@ -50,14 +68,10 @@ const recordPassenger = async (req, res) => {
             return res.status(400).json(formatError(null, 'No active session found for this device', 400));
         }
         
-        // Get mobil to check capacity
+        // Get mobil
         const mobil = await Mobil.findByPk(device.mobil_id, { transaction });
         
-        // Check if mobil is at capacity
-        if (activeSession.passenger_count >= mobil.capacity) {
-            await transaction.rollback();
-            return res.status(400).json(formatError(null, 'Mobil is at maximum capacity', 400));
-        }
+        // No need to check capacity as it was removed from the model
         
         // Create passenger record
         const passengerRecord = await PassengerRecord.create({

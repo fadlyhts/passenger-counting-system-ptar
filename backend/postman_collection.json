@@ -1,0 +1,1087 @@
+{
+	"info": {
+		"_postman_id": "e5cd4ce-97d4-4d69-a96f-8767638c10b4",
+		"name": "Passenger Counting System API",
+		"description": "API collection for the Passenger Counting System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Admin Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/admin/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"admin",
+								"login"
+							]
+						},
+						"description": "Login as an admin user"
+					},
+					"response": []
+				},
+				{
+					"name": "Driver Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"driver1\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/driver/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"driver",
+								"login"
+							]
+						},
+						"description": "Login as a driver"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logout and blacklist the current token"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for login and logout"
+		},
+		{
+			"name": "Admin Management",
+			"item": [
+				{
+					"name": "Get All Admins",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin"
+							]
+						},
+						"description": "Get a list of all admin users"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Admin by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"1"
+							]
+						},
+						"description": "Get a specific admin by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"newadmin\",\n    \"password\": \"password123\",\n    \"name\": \"New Admin\",\n    \"role\": \"admin\",\n    \"email\": \"newadmin@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin"
+							]
+						},
+						"description": "Create a new admin user"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Admin",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Admin Name\",\n    \"email\": \"updated@example.com\",\n    \"status\": \"active\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"1"
+							]
+						},
+						"description": "Update an existing admin"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Admin",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"1"
+							]
+						},
+						"description": "Delete an admin user"
+					},
+					"response": []
+				}
+			],
+			"description": "Admin user management endpoints"
+		},
+		{
+			"name": "Driver Management",
+			"item": [
+				{
+					"name": "Get All Drivers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"driver"
+							]
+						},
+						"description": "Get a list of all drivers"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Driver by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"driver",
+								"1"
+							]
+						},
+						"description": "Get a specific driver by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Driver",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rfid_code\": \"RFID12345\",\n    \"nama_driver\": \"John Doe\",\n    \"username\": \"driver1\",\n    \"password\": \"password123\",\n    \"email\": \"driver1@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/driver",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"driver"
+							]
+						},
+						"description": "Create a new driver"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Driver",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nama_driver\": \"Updated Driver Name\",\n    \"email\": \"updated@example.com\",\n    \"status\": \"active\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/driver/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"driver",
+								"1"
+							]
+						},
+						"description": "Update an existing driver"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Driver",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"driver",
+								"1"
+							]
+						},
+						"description": "Delete a driver"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Driver Login History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/driver/1/login-history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"driver",
+								"1",
+								"login-history"
+							]
+						},
+						"description": "Get login history for a specific driver"
+					},
+					"response": []
+				}
+			],
+			"description": "Driver management endpoints"
+		},
+		{
+			"name": "Vehicle Management",
+			"item": [
+				{
+					"name": "Get All Vehicles",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/mobil",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"mobil"
+							]
+						},
+						"description": "Get a list of all vehicles"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vehicle by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/mobil/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"mobil",
+								"1"
+							]
+						},
+						"description": "Get a specific vehicle by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Vehicle",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nomor_mobil\": \"B1234CD\",\n    \"status\": \"active\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/mobil",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"mobil"
+							]
+						},
+						"description": "Create a new vehicle"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Vehicle",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nomor_mobil\": \"B1234CD\",\n    \"status\": \"maintenance\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/mobil/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"mobil",
+								"1"
+							]
+						},
+						"description": "Update an existing vehicle"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Vehicle",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/mobil/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"mobil",
+								"1"
+							]
+						},
+						"description": "Delete a vehicle"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vehicle Session History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/mobil/1/sessions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"mobil",
+								"1",
+								"sessions"
+							]
+						},
+						"description": "Get session history for a specific vehicle"
+					},
+					"response": []
+				}
+			],
+			"description": "Vehicle (mobil) management endpoints"
+		},
+		{
+			"name": "Device Management",
+			"item": [
+				{
+					"name": "Get All Devices",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/device",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"device"
+							]
+						},
+						"description": "Get a list of all devices"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Device by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/device/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"device",
+								"1"
+							]
+						},
+						"description": "Get a specific device by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Device",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"device_id\": \"ESP32-001\",\n    \"mobil_id\": 1,\n    \"status\": \"online\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/device",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"device"
+							]
+						},
+						"description": "Create a new device"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Device",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"device_id\": \"ESP32-001\",\n    \"mobil_id\": 2,\n    \"status\": \"offline\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/device/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"device",
+								"1"
+							]
+						},
+						"description": "Update an existing device"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Device",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/device/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"device",
+								"1"
+							]
+						},
+						"description": "Delete a device"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Device Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"online\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/device/1/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"device",
+								"1",
+								"status"
+							]
+						},
+						"description": "Update the status of a device"
+					},
+					"response": []
+				}
+			],
+			"description": "Device management endpoints"
+		},
+		{
+			"name": "Session Management",
+			"item": [
+				{
+					"name": "Get Active Sessions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/session/active",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"session",
+								"active"
+							]
+						},
+						"description": "Get all active driver sessions"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sessions by Date Range",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/session/date?start_date=2023-01-01&end_date=2023-12-31",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"session",
+								"date"
+							],
+							"query": [
+								{
+									"key": "start_date",
+									"value": "2023-01-01"
+								},
+								{
+									"key": "end_date",
+									"value": "2023-12-31"
+								}
+							]
+						},
+						"description": "Get sessions within a date range"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Session by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/session/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"session",
+								"1"
+							]
+						},
+						"description": "Get a specific session by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Start Session (Clock In)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"driver_id\": 1,\n    \"mobil_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/session/start",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"session",
+								"start"
+							]
+						},
+						"description": "Start a new driver session (clock in)"
+					},
+					"response": []
+				},
+				{
+					"name": "End Session (Clock Out)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/session/1/end",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"session",
+								"1",
+								"end"
+							]
+						},
+						"description": "End a driver session (clock out)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sessions by Driver ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/session/driver/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"session",
+								"driver",
+								"1"
+							]
+						},
+						"description": "Get sessions for a specific driver"
+					},
+					"response": []
+				}
+			],
+			"description": "Driver session management endpoints"
+		},
+		{
+			"name": "Passenger Management",
+			"item": [
+				{
+					"name": "Record Passenger",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rfid_code\": \"RFID67890\",\n    \"device_id\": \"ESP32-001\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/passenger/record",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"passenger",
+								"record"
+							]
+						},
+						"description": "Record a new passenger from ESP32 device"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Passengers by Session ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/passenger/session/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"passenger",
+								"session",
+								"1"
+							]
+						},
+						"description": "Get passengers for a specific session"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Passenger by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/passenger/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"passenger",
+								"1"
+							]
+						},
+						"description": "Get a specific passenger record by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Passengers by RFID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/passenger/rfid/RFID67890",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"passenger",
+								"rfid",
+								"RFID67890"
+							]
+						},
+						"description": "Get passenger records by RFID code"
+					},
+					"response": []
+				}
+			],
+			"description": "Passenger record management endpoints"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

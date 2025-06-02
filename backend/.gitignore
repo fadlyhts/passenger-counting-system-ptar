@@ -26,3 +26,7 @@ pids
 .vscode/
 *.swp
 *.swo
+
+
+# Utility scripts
+src/scripts/

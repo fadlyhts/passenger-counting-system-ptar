@@ -5,6 +5,7 @@ const mobilController = require('./mobilController');
 const deviceController = require('./deviceController');
 const sessionController = require('./sessionController');
 const passengerController = require('./passengerController');
+const reportsController = require('./reportsController');
 
 module.exports = {
     authController,
@@ -13,5 +14,6 @@ module.exports = {
     mobilController,
     deviceController,
     sessionController,
-    passengerController
+    passengerController,
+    reportsController
 };

@@ -6,6 +6,7 @@ const mobilRoutes = require('./mobilRoutes');
 const deviceRoutes = require('./deviceRoutes');
 const sessionRoutes = require('./sessionRoutes');
 const passengerRoutes = require('./passengerRoutes');
+const reportsRoutes = require('./reportsRoutes');
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ router.use('/api/mobil', mobilRoutes);
 router.use('/api/device', deviceRoutes);
 router.use('/api/session', sessionRoutes);
 router.use('/api/passenger', passengerRoutes);
+router.use('/api/reports', reportsRoutes);
 
 // Base route
 router.get('/', (req, res) => {

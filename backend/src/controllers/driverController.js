@@ -199,11 +199,43 @@ const getDriverLoginHistory = async (req, res) => {
     }
 };
 
+/**
+ * Update driver's own password
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const updateDriverPassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const driverId = req.user.id; // Get driver ID from authenticated user
+        
+        // Find driver
+        const driver = await Driver.findByPk(driverId);
+        if (!driver) {
+            return res.status(404).json(formatError(null, 'Driver not found', 404));
+        }
+        
+        // Verify current password
+        const isPasswordValid = await driver.validatePassword(currentPassword);
+        if (!isPasswordValid) {
+            return res.status(401).json(formatError(null, 'Current password is incorrect', 401));
+        }
+        
+        // Update password
+        await driver.update({ password: newPassword });
+        
+        return res.json(formatResponse(null, 'Password updated successfully'));
+    } catch (error) {
+        return res.status(500).json(formatError(error));
+    }
+};
+
 module.exports = {
     getAllDrivers,
     getDriverById,
     createDriver,
     updateDriver,
     deleteDriver,
-    getDriverLoginHistory
+    getDriverLoginHistory,
+    updateDriverPassword
 };

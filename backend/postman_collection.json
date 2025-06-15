@@ -246,6 +246,39 @@
 			"name": "Driver Management",
 			"item": [
 				{
+					"name": "Update Driver Password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"currentPassword\": \"password123\",\n    \"newPassword\": \"newpassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/driver/password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"driver",
+								"password"
+							]
+						},
+						"description": "Update driver's own password (driver only)"
+					},
+					"response": []
+				},
+				{
 					"name": "Get All Drivers",
 					"request": {
 						"method": "GET",
@@ -481,7 +514,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"nomor_mobil\": \"B1234CD\",\n    \"status\": \"active\"\n}"
+							"raw": "{\n    \"nomor_mobil\": \"B1234CD\",\n    \"capacity\": 8,\n    \"status\": \"active\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/mobil",
@@ -513,7 +546,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"nomor_mobil\": \"B1234CD\",\n    \"status\": \"maintenance\"\n}"
+							"raw": "{\n    \"nomor_mobil\": \"B1234CD\",\n    \"capacity\": 10,\n    \"status\": \"maintenance\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/mobil/1",

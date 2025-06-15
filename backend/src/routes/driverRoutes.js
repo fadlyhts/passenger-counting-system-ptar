@@ -10,6 +10,22 @@ const router = express.Router();
 router.use(auth.verifyToken);
 
 /**
+ * @route PUT /api/driver/password
+ * @desc Update driver's own password
+ * @access Private (Driver only)
+ */
+router.put(
+    '/password',
+    auth.isDriver,
+    validate([
+        body('currentPassword').notEmpty().withMessage('Current password is required'),
+        body('newPassword').notEmpty().withMessage('New password is required')
+            .isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
+    ]),
+    driverController.updateDriverPassword
+);
+
+/**
  * @route GET /api/driver
  * @desc Get all drivers
  * @access Private (Admin only)

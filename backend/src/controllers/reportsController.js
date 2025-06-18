@@ -13,23 +13,18 @@ const getDailyReport = async (req, res) => {
         const { date } = req.query;
         
         // Default to today if no date provided
-        const reportDate = date ? new Date(date) : new Date();
+        let reportDate;
+        if (date) {
+            // Use the exact date provided by the user
+            reportDate = date;
+        } else {
+            // Get today's date in YYYY-MM-DD format
+            reportDate = new Date().toISOString().split('T')[0];
+        }
         
-        // Set time to beginning of the day
-        const startDate = new Date(reportDate);
-        startDate.setHours(0, 0, 0, 0);
-        
-        // Set time to end of the day
-        const endDate = new Date(reportDate);
-        endDate.setHours(23, 59, 59, 999);
-        
-        // Get passenger records for the day
+        // Get passenger records for the day with explicit date handling
         const passengerRecords = await PassengerRecord.findAll({
-            where: {
-                timestamp: {
-                    [Op.between]: [startDate, endDate]
-                }
-            },
+            where: sequelize.literal(`DATE(timestamp) = DATE('${reportDate}')`),
             include: [
                 {
                     model: DriverMobilSession,
@@ -51,48 +46,14 @@ const getDailyReport = async (req, res) => {
             order: [['timestamp', 'ASC']]
         });
         
-        // Get active sessions for the day
+        // Get active sessions for the day with explicit date handling
         const activeSessions = await DriverMobilSession.findAll({
-            where: {
-                [Op.or]: [
-                    {
-                        start_time: {
-                            [Op.between]: [startDate, endDate]
-                        }
-                    },
-                    {
-                        end_time: {
-                            [Op.between]: [startDate, endDate]
-                        }
-                    },
-                    {
-                        [Op.and]: [
-                            {
-                                start_time: {
-                                    [Op.lte]: startDate
-                                }
-                            },
-                            {
-                                end_time: {
-                                    [Op.gte]: endDate
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        [Op.and]: [
-                            {
-                                start_time: {
-                                    [Op.lte]: endDate
-                                }
-                            },
-                            {
-                                end_time: null
-                            }
-                        ]
-                    }
-                ]
-            },
+            where: sequelize.literal(`
+                DATE(start_time) = DATE('${reportDate}')
+                OR DATE(end_time) = DATE('${reportDate}')
+                OR (DATE(start_time) <= DATE('${reportDate}') AND DATE(end_time) >= DATE('${reportDate}'))
+                OR (DATE(start_time) <= DATE('${reportDate}') AND end_time IS NULL)
+            `),
             include: [
                 {
                     model: Driver,
@@ -130,7 +91,7 @@ const getDailyReport = async (req, res) => {
         const sessionCountsArray = Object.values(sessionCounts);
         
         return res.json(formatResponse({
-            date: reportDate.toISOString().split('T')[0],
+            date: reportDate,
             total_passengers: totalPassengers,
             active_sessions: activeSessions.length,
             sessions: sessionCountsArray,
@@ -154,27 +115,26 @@ const getWeeklyReport = async (req, res) => {
         let reportStartDate, reportEndDate;
         
         if (startDate && endDate) {
-            reportStartDate = new Date(startDate);
-            reportEndDate = new Date(endDate);
+            // Use the exact dates provided by the user without any timezone manipulation
+            reportStartDate = startDate;
+            reportEndDate = endDate;
         } else {
             // Get current week (Sunday to Saturday)
             const today = new Date();
-            reportStartDate = new Date(today);
-            reportStartDate.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
-            reportStartDate.setHours(0, 0, 0, 0);
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
+            startOfWeek.setHours(0, 0, 0, 0);
             
-            reportEndDate = new Date(reportStartDate);
-            reportEndDate.setDate(reportStartDate.getDate() + 6); // End of week (Saturday)
-            reportEndDate.setHours(23, 59, 59, 999);
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6); // End of week (Saturday)
+            endOfWeek.setHours(23, 59, 59, 999);
+            
+            // Format dates as YYYY-MM-DD
+            reportStartDate = startOfWeek.toISOString().split('T')[0];
+            reportEndDate = endOfWeek.toISOString().split('T')[0];
         }
         
-        // Set time to beginning of the start date
-        reportStartDate.setHours(0, 0, 0, 0);
-        
-        // Set time to end of the end date
-        reportEndDate.setHours(23, 59, 59, 999);
-        
-        // Get daily counts using SQL query for better performance
+        // Get daily counts using SQL query for better performance with explicit date handling
         const dailyCounts = await sequelize.query(`
             SELECT 
                 DATE(timestamp) as date,
@@ -182,7 +142,7 @@ const getWeeklyReport = async (req, res) => {
             FROM 
                 passenger_record
             WHERE 
-                timestamp BETWEEN :startDate AND :endDate
+                DATE(timestamp) BETWEEN DATE(:startDate) AND DATE(:endDate)
             GROUP BY 
                 DATE(timestamp)
             ORDER BY 
@@ -198,48 +158,14 @@ const getWeeklyReport = async (req, res) => {
         // Get total passenger count
         const totalPassengers = dailyCounts.reduce((sum, day) => sum + parseInt(day.count), 0);
         
-        // Get session data
+        // Get session data with explicit date handling
         const sessions = await DriverMobilSession.findAll({
-            where: {
-                [Op.or]: [
-                    {
-                        start_time: {
-                            [Op.between]: [reportStartDate, reportEndDate]
-                        }
-                    },
-                    {
-                        end_time: {
-                            [Op.between]: [reportStartDate, reportEndDate]
-                        }
-                    },
-                    {
-                        [Op.and]: [
-                            {
-                                start_time: {
-                                    [Op.lte]: reportStartDate
-                                }
-                            },
-                            {
-                                end_time: {
-                                    [Op.gte]: reportEndDate
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        [Op.and]: [
-                            {
-                                start_time: {
-                                    [Op.lte]: reportEndDate
-                                }
-                            },
-                            {
-                                end_time: null
-                            }
-                        ]
-                    }
-                ]
-            },
+            where: sequelize.literal(`
+                (DATE(start_time) BETWEEN DATE('${reportStartDate}') AND DATE('${reportEndDate}'))
+                OR (DATE(end_time) BETWEEN DATE('${reportStartDate}') AND DATE('${reportEndDate}'))
+                OR (DATE(start_time) <= DATE('${reportStartDate}') AND DATE(end_time) >= DATE('${reportEndDate}'))
+                OR (DATE(start_time) <= DATE('${reportEndDate}') AND end_time IS NULL)
+            `),
             include: [
                 {
                     model: Driver,
@@ -256,8 +182,8 @@ const getWeeklyReport = async (req, res) => {
         });
         
         return res.json(formatResponse({
-            start_date: reportStartDate.toISOString().split('T')[0],
-            end_date: reportEndDate.toISOString().split('T')[0],
+            start_date: reportStartDate,
+            end_date: reportEndDate,
             total_passengers: totalPassengers,
             daily_counts: dailyCounts,
             sessions: sessions.map(session => ({
@@ -287,13 +213,21 @@ const getMonthlyReport = async (req, res) => {
         // Default to current year and month if not provided
         const currentDate = new Date();
         const reportYear = year || currentDate.getFullYear();
-        const reportMonth = month ? parseInt(month) - 1 : currentDate.getMonth(); // JS months are 0-indexed
+        const reportMonth = month || (currentDate.getMonth() + 1); // Use 1-indexed month for consistency
         
-        // Create date range for the month
-        const startDate = new Date(reportYear, reportMonth, 1, 0, 0, 0, 0);
-        const endDate = new Date(reportYear, reportMonth + 1, 0, 23, 59, 59, 999); // Last day of month
+        // Create date strings for the first and last day of the month
+        const startDate = `${reportYear}-${String(reportMonth).padStart(2, '0')}-01`;
         
-        // Get daily counts using SQL query for better performance
+        // Calculate the last day of the month using SQL
+        const lastDayQuery = await sequelize.query(`
+            SELECT LAST_DAY('${startDate}') as last_day
+        `, {
+            type: sequelize.QueryTypes.SELECT
+        });
+        
+        const endDate = lastDayQuery[0].last_day;
+        
+        // Get daily counts using SQL query for better performance with explicit date handling
         const dailyCounts = await sequelize.query(`
             SELECT 
                 DATE(timestamp) as date,
@@ -301,7 +235,7 @@ const getMonthlyReport = async (req, res) => {
             FROM 
                 passenger_record
             WHERE 
-                timestamp BETWEEN :startDate AND :endDate
+                DATE(timestamp) BETWEEN DATE(:startDate) AND DATE(:endDate)
             GROUP BY 
                 DATE(timestamp)
             ORDER BY 
@@ -317,7 +251,7 @@ const getMonthlyReport = async (req, res) => {
         // Get total passenger count
         const totalPassengers = dailyCounts.reduce((sum, day) => sum + parseInt(day.count), 0);
         
-        // Get driver statistics
+        // Get driver statistics with explicit date handling
         const driverStats = await sequelize.query(`
             SELECT 
                 d.id as driver_id,
@@ -329,9 +263,9 @@ const getMonthlyReport = async (req, res) => {
             JOIN 
                 driver_mobil_session dms ON d.id = dms.driver_id
             WHERE 
-                (dms.start_time BETWEEN :startDate AND :endDate)
-                OR (dms.end_time BETWEEN :startDate AND :endDate)
-                OR (dms.start_time <= :startDate AND (dms.end_time >= :endDate OR dms.end_time IS NULL))
+                (DATE(dms.start_time) BETWEEN DATE(:startDate) AND DATE(:endDate))
+                OR (DATE(dms.end_time) BETWEEN DATE(:startDate) AND DATE(:endDate))
+                OR (DATE(dms.start_time) <= DATE(:startDate) AND (DATE(dms.end_time) >= DATE(:endDate) OR dms.end_time IS NULL))
             GROUP BY 
                 d.id, d.nama_driver
             ORDER BY 
@@ -344,7 +278,7 @@ const getMonthlyReport = async (req, res) => {
             type: sequelize.QueryTypes.SELECT
         });
         
-        // Get mobil statistics
+        // Get mobil statistics with explicit date handling
         const mobilStats = await sequelize.query(`
             SELECT 
                 m.id as mobil_id,
@@ -356,9 +290,9 @@ const getMonthlyReport = async (req, res) => {
             JOIN 
                 driver_mobil_session dms ON m.id = dms.mobil_id
             WHERE 
-                (dms.start_time BETWEEN :startDate AND :endDate)
-                OR (dms.end_time BETWEEN :startDate AND :endDate)
-                OR (dms.start_time <= :startDate AND (dms.end_time >= :endDate OR dms.end_time IS NULL))
+                (DATE(dms.start_time) BETWEEN DATE(:startDate) AND DATE(:endDate))
+                OR (DATE(dms.end_time) BETWEEN DATE(:startDate) AND DATE(:endDate))
+                OR (DATE(dms.start_time) <= DATE(:startDate) AND (DATE(dms.end_time) >= DATE(:endDate) OR dms.end_time IS NULL))
             GROUP BY 
                 m.id, m.nomor_mobil
             ORDER BY 
@@ -373,9 +307,9 @@ const getMonthlyReport = async (req, res) => {
         
         return res.json(formatResponse({
             year: parseInt(reportYear),
-            month: reportMonth + 1,
-            start_date: startDate.toISOString().split('T')[0],
-            end_date: endDate.toISOString().split('T')[0],
+            month: parseInt(reportMonth),
+            start_date: startDate,
+            end_date: endDate,
             total_passengers: totalPassengers,
             daily_counts: dailyCounts,
             driver_statistics: driverStats,
@@ -409,63 +343,30 @@ const getDriverReport = async (req, res) => {
         let reportStartDate, reportEndDate;
         
         if (startDate && endDate) {
-            reportStartDate = new Date(startDate);
-            reportEndDate = new Date(endDate);
+            // Use the exact dates provided by the user without any timezone manipulation
+            reportStartDate = startDate;
+            reportEndDate = endDate;
         } else {
-            reportEndDate = new Date();
-            reportStartDate = new Date();
-            reportStartDate.setDate(reportEndDate.getDate() - 30);
+            // Get last 30 days
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today);
+            thirtyDaysAgo.setDate(today.getDate() - 30);
+            
+            // Format dates as YYYY-MM-DD
+            reportStartDate = thirtyDaysAgo.toISOString().split('T')[0];
+            reportEndDate = today.toISOString().split('T')[0];
         }
         
-        // Set time to beginning of the start date
-        reportStartDate.setHours(0, 0, 0, 0);
-        
-        // Set time to end of the end date
-        reportEndDate.setHours(23, 59, 59, 999);
-        
-        // Get sessions for the driver
+        // Get sessions for the driver with explicit date handling
         const sessions = await DriverMobilSession.findAll({
-            where: {
-                driver_id,
-                [Op.or]: [
-                    {
-                        start_time: {
-                            [Op.between]: [reportStartDate, reportEndDate]
-                        }
-                    },
-                    {
-                        end_time: {
-                            [Op.between]: [reportStartDate, reportEndDate]
-                        }
-                    },
-                    {
-                        [Op.and]: [
-                            {
-                                start_time: {
-                                    [Op.lte]: reportStartDate
-                                }
-                            },
-                            {
-                                end_time: {
-                                    [Op.gte]: reportEndDate
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        [Op.and]: [
-                            {
-                                start_time: {
-                                    [Op.lte]: reportEndDate
-                                }
-                            },
-                            {
-                                end_time: null
-                            }
-                        ]
-                    }
-                ]
-            },
+            where: sequelize.literal(`
+                driver_id = ${driver_id} AND (
+                    (DATE(start_time) BETWEEN DATE('${reportStartDate}') AND DATE('${reportEndDate}'))
+                    OR (DATE(end_time) BETWEEN DATE('${reportStartDate}') AND DATE('${reportEndDate}'))
+                    OR (DATE(start_time) <= DATE('${reportStartDate}') AND DATE(end_time) >= DATE('${reportEndDate}'))
+                    OR (DATE(start_time) <= DATE('${reportEndDate}') AND end_time IS NULL)
+                )
+            `),
             include: [
                 {
                     model: Mobil,
@@ -502,7 +403,7 @@ const getDriverReport = async (req, res) => {
             };
         });
         
-        // Get daily passenger counts
+        // Get daily passenger counts with explicit date handling
         const dailyCounts = await sequelize.query(`
             SELECT 
                 DATE(pr.timestamp) as date,
@@ -513,7 +414,7 @@ const getDriverReport = async (req, res) => {
                 driver_mobil_session dms ON pr.driver_mobil_session_id = dms.id
             WHERE 
                 dms.driver_id = :driverId
-                AND pr.timestamp BETWEEN :startDate AND :endDate
+                AND DATE(pr.timestamp) BETWEEN DATE(:startDate) AND DATE(:endDate)
             GROUP BY 
                 DATE(pr.timestamp)
             ORDER BY 
@@ -533,8 +434,8 @@ const getDriverReport = async (req, res) => {
                 name: driver.nama_driver,
                 rfid_code: driver.rfid_code
             },
-            start_date: reportStartDate.toISOString().split('T')[0],
-            end_date: reportEndDate.toISOString().split('T')[0],
+            start_date: reportStartDate,
+            end_date: reportEndDate,
             total_passengers: totalPassengers,
             total_sessions: sessions.length,
             total_hours_worked: totalHoursWorked.toFixed(2),
@@ -569,63 +470,30 @@ const getMobilReport = async (req, res) => {
         let reportStartDate, reportEndDate;
         
         if (startDate && endDate) {
-            reportStartDate = new Date(startDate);
-            reportEndDate = new Date(endDate);
+            // Use the exact dates provided by the user without any timezone manipulation
+            reportStartDate = startDate;
+            reportEndDate = endDate;
         } else {
-            reportEndDate = new Date();
-            reportStartDate = new Date();
-            reportStartDate.setDate(reportEndDate.getDate() - 30);
+            // Get last 30 days
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today);
+            thirtyDaysAgo.setDate(today.getDate() - 30);
+            
+            // Format dates as YYYY-MM-DD
+            reportStartDate = thirtyDaysAgo.toISOString().split('T')[0];
+            reportEndDate = today.toISOString().split('T')[0];
         }
         
-        // Set time to beginning of the start date
-        reportStartDate.setHours(0, 0, 0, 0);
-        
-        // Set time to end of the end date
-        reportEndDate.setHours(23, 59, 59, 999);
-        
-        // Get sessions for the mobil
+        // Get sessions for the mobil with explicit date handling
         const sessions = await DriverMobilSession.findAll({
-            where: {
-                mobil_id,
-                [Op.or]: [
-                    {
-                        start_time: {
-                            [Op.between]: [reportStartDate, reportEndDate]
-                        }
-                    },
-                    {
-                        end_time: {
-                            [Op.between]: [reportStartDate, reportEndDate]
-                        }
-                    },
-                    {
-                        [Op.and]: [
-                            {
-                                start_time: {
-                                    [Op.lte]: reportStartDate
-                                }
-                            },
-                            {
-                                end_time: {
-                                    [Op.gte]: reportEndDate
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        [Op.and]: [
-                            {
-                                start_time: {
-                                    [Op.lte]: reportEndDate
-                                }
-                            },
-                            {
-                                end_time: null
-                            }
-                        ]
-                    }
-                ]
-            },
+            where: sequelize.literal(`
+                mobil_id = ${mobil_id} AND (
+                    (DATE(start_time) BETWEEN DATE('${reportStartDate}') AND DATE('${reportEndDate}'))
+                    OR (DATE(end_time) BETWEEN DATE('${reportStartDate}') AND DATE('${reportEndDate}'))
+                    OR (DATE(start_time) <= DATE('${reportStartDate}') AND DATE(end_time) >= DATE('${reportEndDate}'))
+                    OR (DATE(start_time) <= DATE('${reportEndDate}') AND end_time IS NULL)
+                )
+            `),
             include: [
                 {
                     model: Driver,
@@ -662,7 +530,7 @@ const getMobilReport = async (req, res) => {
             };
         });
         
-        // Get daily passenger counts
+        // Get daily passenger counts with explicit date handling
         const dailyCounts = await sequelize.query(`
             SELECT 
                 DATE(pr.timestamp) as date,
@@ -673,7 +541,7 @@ const getMobilReport = async (req, res) => {
                 driver_mobil_session dms ON pr.driver_mobil_session_id = dms.id
             WHERE 
                 dms.mobil_id = :mobilId
-                AND pr.timestamp BETWEEN :startDate AND :endDate
+                AND DATE(pr.timestamp) BETWEEN DATE(:startDate) AND DATE(:endDate)
             GROUP BY 
                 DATE(pr.timestamp)
             ORDER BY 
@@ -687,7 +555,7 @@ const getMobilReport = async (req, res) => {
             type: sequelize.QueryTypes.SELECT
         });
         
-        // Get driver statistics for this mobil
+        // Get driver statistics for this mobil with explicit date handling
         const driverStats = await sequelize.query(`
             SELECT 
                 d.id as driver_id,
@@ -701,9 +569,9 @@ const getMobilReport = async (req, res) => {
             WHERE 
                 dms.mobil_id = :mobilId
                 AND (
-                    (dms.start_time BETWEEN :startDate AND :endDate)
-                    OR (dms.end_time BETWEEN :startDate AND :endDate)
-                    OR (dms.start_time <= :startDate AND (dms.end_time >= :endDate OR dms.end_time IS NULL))
+                    (DATE(dms.start_time) BETWEEN DATE(:startDate) AND DATE(:endDate))
+                    OR (DATE(dms.end_time) BETWEEN DATE(:startDate) AND DATE(:endDate))
+                    OR (DATE(dms.start_time) <= DATE(:startDate) AND (DATE(dms.end_time) >= DATE(:endDate) OR dms.end_time IS NULL))
                 )
             GROUP BY 
                 d.id, d.nama_driver
@@ -724,8 +592,8 @@ const getMobilReport = async (req, res) => {
                 nomor_mobil: mobil.nomor_mobil,
                 status: mobil.status
             },
-            start_date: reportStartDate.toISOString().split('T')[0],
-            end_date: reportEndDate.toISOString().split('T')[0],
+            start_date: reportStartDate,
+            end_date: reportEndDate,
             total_passengers: totalPassengers,
             total_sessions: sessions.length,
             total_hours_in_use: totalHoursInUse.toFixed(2),

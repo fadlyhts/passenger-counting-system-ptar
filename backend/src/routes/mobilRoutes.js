@@ -32,6 +32,8 @@ router.post(
     '/',
     auth.isAdmin,
     validate([
+        body('mobil_id').optional().isString().withMessage('Mobil ID must be a string')
+            .isLength({ min: 1, max: 50 }).withMessage('Mobil ID must be between 1-50 characters'),
         body('nomor_mobil').notEmpty().withMessage('Nomor mobil is required'),
         body('status').optional().isIn(['active', 'maintenance']).withMessage('Status must be active or maintenance')
     ]),
@@ -47,6 +49,8 @@ router.put(
     '/:id',
     auth.isAdmin,
     validate([
+        body('mobil_id').optional().isString().withMessage('Mobil ID must be a string')
+            .isLength({ min: 1, max: 50 }).withMessage('Mobil ID must be between 1-50 characters'),
         body('nomor_mobil').optional(),
         body('status').optional().isIn(['active', 'maintenance']).withMessage('Status must be active or maintenance')
     ]),

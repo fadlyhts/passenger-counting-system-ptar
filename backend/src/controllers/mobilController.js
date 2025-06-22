@@ -51,7 +51,7 @@ const getMobilById = async (req, res) => {
  */
 const createMobil = async (req, res) => {
     try {
-        const { nomor_mobil, status } = req.body;
+        const { mobil_id, nomor_mobil, status } = req.body;
         
         // Check if nomor_mobil already exists
         const existingMobil = await Mobil.findOne({ where: { nomor_mobil } });
@@ -59,11 +59,26 @@ const createMobil = async (req, res) => {
             return res.status(400).json(formatError(null, 'Nomor mobil already exists', 400));
         }
         
+        // Check if mobil_id already exists (if provided)
+        if (mobil_id) {
+            const existingMobilId = await Mobil.findOne({ where: { mobil_id } });
+            if (existingMobilId) {
+                return res.status(400).json(formatError(null, 'Mobil ID already exists', 400));
+            }
+        }
+        
         // Create new mobil
-        const mobil = await Mobil.create({
+        const mobilData = {
             nomor_mobil,
             status: status || 'active'
-        });
+        };
+        
+        // Add mobil_id if provided
+        if (mobil_id) {
+            mobilData.mobil_id = mobil_id;
+        }
+        
+        const mobil = await Mobil.create(mobilData);
         
         return res.status(201).json(formatResponse(mobil, 'Mobil created successfully'));
     } catch (error) {
@@ -79,7 +94,7 @@ const createMobil = async (req, res) => {
 const updateMobil = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nomor_mobil, status } = req.body;
+        const { mobil_id, nomor_mobil, status } = req.body;
         
         // Find mobil
         const mobil = await Mobil.findByPk(id);
@@ -95,8 +110,17 @@ const updateMobil = async (req, res) => {
             }
         }
         
+        // Check if mobil_id already exists (if being updated)
+        if (mobil_id && mobil_id !== mobil.mobil_id) {
+            const existingMobilId = await Mobil.findOne({ where: { mobil_id } });
+            if (existingMobilId) {
+                return res.status(400).json(formatError(null, 'Mobil ID already exists', 400));
+            }
+        }
+        
         // Update mobil
         const updateData = {};
+        if (mobil_id !== undefined) updateData.mobil_id = mobil_id;
         if (nomor_mobil) updateData.nomor_mobil = nomor_mobil;
         if (status) updateData.status = status;
         

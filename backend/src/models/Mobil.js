@@ -6,6 +6,13 @@ module.exports = (sequelize) => {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true
+        },        mobil_id: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            unique: true,
+            validate: {
+                len: [1, 50] // Limit length between 1-50 characters
+            }
         },
         nomor_mobil: {
             type: DataTypes.STRING,

@@ -6,7 +6,7 @@ const config = require('./config');
 const routes = require('./routes');
 const { sequelize } = require('./config/database');
 const { errorHandler, notFound } = require('./middleware');
-
+ 
 // Set default timezone to Jakarta (UTC+7)
 process.env.TZ = 'Asia/Jakarta';
 

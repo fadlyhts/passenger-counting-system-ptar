@@ -163,14 +163,25 @@ const Sidebar = ({ activeItem }) => {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <img 
-                    src={activeItem === item.id ? item.iconWhite : item.iconGray} 
-                    alt={item.label}
-                    style={{
-                      width: '20px',
-                      height: '20px'
-                    }}
-                  />
+                  {item.id === 'settings' ? (
+                    // Text-based gear icon for Settings
+                    <span style={{
+                      fontSize: '16px',
+                      color: activeItem === item.id ? 'white' : '#666',
+                      fontWeight: 'bold'
+                    }}>
+                      ⚙
+                    </span>
+                  ) : (
+                    <img 
+                      src={activeItem === item.id ? item.iconWhite : item.iconGray} 
+                      alt={item.label}
+                      style={{
+                        width: '20px',
+                        height: '20px'
+                      }}
+                    />
+                  )}
                 </span>
                 <span style={{
                   fontSize: '14px'

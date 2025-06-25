@@ -17,6 +17,7 @@ import Driver from './pages/DriverPage.jsx';
 import Devices from './pages/Devices.jsx';
 import Sessions from './pages/Sessions.jsx';
 import Reports from './pages/Reports.jsx';
+import Settings from './pages/Settings.jsx';
 
 // Services
 import { authService } from './services';
@@ -52,6 +53,7 @@ function App() {
               <Route path="devices" element={<Devices />} />
               <Route path="sessions" element={<Sessions />} />
               <Route path="reports" element={<Reports />} />
+              <Route path="settings" element={<Settings />} />
             </Route>
           </Route>
           

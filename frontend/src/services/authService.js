@@ -105,16 +105,22 @@ const authService = {
     }
   },
 
-  // Get current user from localStorage
-  getCurrentUser: () => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  },
-
   // Get user type (admin or driver)
   getUserType: () => {
     return localStorage.getItem('userType');
   },
+
+  // Get current user from localStorage
+  getCurrentUser: () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+      return null;
+    }
+  },
+
   // Check if user is logged in
   isLoggedIn: () => {
     return !!localStorage.getItem('token');
@@ -138,6 +144,72 @@ const authService = {
       return user;
     } catch (error) {
       console.error('Error getting current user profile:', error);
+      throw error;
+    }
+  },
+
+  // Update user profile
+  updateProfile: async (profileData) => {
+    try {
+      const userType = authService.getUserType();
+      const currentUser = authService.getCurrentUser();
+      
+      if (!currentUser || !currentUser.id) {
+        throw new Error('No current user found');
+      }
+
+      let response;
+
+      if (userType === 'admin') {
+        // Update admin profile using admin routes
+        response = await api.put(`/admin/${currentUser.id}`, profileData);
+      } else if (userType === 'driver') {
+        // Update driver profile
+        response = await api.put(`/driver/${currentUser.id}`, profileData);
+      } else {
+        throw new Error('Invalid user type');
+      }
+
+      // Update localStorage with new data
+      const updatedUser = { ...currentUser, ...profileData };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+
+      return response.data;
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  },
+
+  // Change password
+  changePassword: async (passwordData) => {
+    try {
+      const userType = authService.getUserType();
+      const currentUser = authService.getCurrentUser();
+      
+      if (!currentUser || !currentUser.id) {
+        throw new Error('No current user found');
+      }
+
+      let response;
+
+      if (userType === 'admin') {
+        // Change admin password using admin routes
+        response = await api.put(`/admin/${currentUser.id}`, {
+          password: passwordData.new_password
+        });
+      } else if (userType === 'driver') {
+        // Change driver password
+        response = await api.put(`/driver/${currentUser.id}`, {
+          password: passwordData.new_password
+        });
+      } else {
+        throw new Error('Invalid user type');
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error('Error changing password:', error);
       throw error;
     }
   }

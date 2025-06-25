@@ -4,29 +4,22 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: './', // This makes paths relative
+  base: '/', // Change from './' to '/'
   server: {
     port: 3000,
     host: true, // Allow external connections
-    proxy: {
-      '/api': {
-        target: process.env.VITE_API_BASE_URL || 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      }
-    }
+    strictPort: true // Exit if port 3000 is not available
   },
   build: {
     outDir: 'build',
     sourcemap: false, // Disable sourcemaps for production
     minify: 'terser',
+    target: 'es2015', // Better browser compatibility
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          charts: ['chart.js', 'react-chartjs-2']
+          router: ['react-router-dom']
         }
       }
     }

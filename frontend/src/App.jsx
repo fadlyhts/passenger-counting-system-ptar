@@ -13,7 +13,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import PassengerCount from './pages/PassengerCount.jsx';
 import Vehicles from './pages/Vehicles.jsx';
 import Drivers from './pages/Drivers.jsx';
-import Driver from './pages/Driver/index.jsx';
+import Driver from './pages/DriverPage.jsx';
 import Devices from './pages/Devices.jsx';
 import Sessions from './pages/Sessions.jsx';
 import Reports from './pages/Reports.jsx';

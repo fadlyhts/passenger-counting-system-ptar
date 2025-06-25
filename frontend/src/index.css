@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles */
+@layer base {
+  body {
+    @apply bg-gray-50 font-sans;
+  }
+}
+
+/* Custom component styles matching your existing design */
+@layer components {
+  .dashboard {
+    @apply min-h-screen bg-gray-50;
+  }
+
+  .dashboard-header {
+    @apply bg-white shadow-sm border-b border-gray-200 px-6 py-4;
+  }
+
+  .dashboard-title-row {
+    @apply flex justify-between items-center;
+  }
+
+  .refresh-button {
+    @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 shadow-sm;
+  }
+
+  .stats-container {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6;
+  }
+
+  .stat-card {
+    @apply bg-white rounded-lg shadow-card hover:shadow-card-hover transition-shadow duration-200 p-6;
+  }
+
+  .stat-card-content {
+    @apply flex items-center justify-between;
+  }
+
+  .stat-card-title {
+    @apply text-sm font-medium text-gray-600 mb-2;
+  }
+
+  .stat-card-value {
+    @apply text-2xl font-bold text-gray-900 mb-1;
+  }
+
+  .stat-card-change {
+    @apply text-sm font-medium;
+  }
+
+  .stat-card-change.positive {
+    @apply text-green-600;
+  }
+
+  .stat-card-icon {
+    @apply w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center;
+  }
+
+  .stat-card-icon img {
+    @apply w-6 h-6 opacity-60;
+  }
+
+  .main-content {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-6 px-6 pb-6;
+  }
+
+  .content-card {
+    @apply bg-white rounded-lg shadow-card p-6;
+  }
+
+  .content-card h3 {
+    @apply text-lg font-semibold text-gray-900 mb-4;
+  }
+
+  .chart-container {
+    @apply w-full;
+  }
+
+  .quick-actions {
+    @apply px-6 pb-6;
+  }
+
+  .quick-actions h3 {
+    @apply text-lg font-semibold text-gray-900 mb-4;
+  }
+
+  .actions-container {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-4;
+  }
+
+  .action-button {
+    @apply bg-white rounded-lg shadow-card hover:shadow-card-hover transition-all duration-200 p-4 flex items-center space-x-3 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300;
+  }
+
+  .action-icon {
+    @apply w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center;
+  }
+  .action-icon img {
+    @apply w-5 h-5 opacity-60;
+  }
+}
+
+/* Custom animations */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

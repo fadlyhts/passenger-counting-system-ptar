@@ -1,5 +1,6 @@
-const { DriverMobilSession, Driver, Mobil, PassengerRecord } = require('../models');
+const { DriverMobilSession, Driver, Mobil, PassengerRecord, Device } = require('../models');
 const { formatResponse, formatError } = require('../utils');
+const { sequelize } = require('../config/database');
 const { Op } = require('sequelize');
 
 /**
@@ -293,11 +294,155 @@ const getSessionsByDateRange = async (req, res) => {
     }
 };
 
+/**
+ * Handle driver session via RFID tap (for ESP32 devices)
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const handleRfidSession = async (req, res) => {
+    // Use a transaction to ensure data consistency
+    const transaction = await sequelize.transaction();
+    
+    try {
+        const { rfid_code, device_id } = req.body;
+        
+        // Find device
+        const device = await Device.findOne({
+            where: { device_id },
+            transaction
+        });
+        
+        if (!device) {
+            await transaction.rollback();
+            return res.status(404).json(formatError(null, 'Device not found', 404));
+        }
+        
+        // Check if device is online
+        if (device.status !== 'online') {
+            await transaction.rollback();
+            return res.status(400).json(formatError(null, 'Device is offline', 400));
+        }
+        
+        // Update device last_sync
+        await device.update({
+            last_sync: new Date()
+        }, { transaction });
+        
+        // Find driver by RFID code
+        const driver = await Driver.findOne({
+            where: { 
+                rfid_code,
+                status: 'active'
+            },
+            transaction
+        });
+        
+        if (!driver) {
+            await transaction.rollback();
+            return res.status(404).json(formatError(null, 'Driver not found or inactive', 404));
+        }
+        
+        // Get mobil information
+        const mobil = await Mobil.findByPk(device.mobil_id, { transaction });
+        if (!mobil) {
+            await transaction.rollback();
+            return res.status(404).json(formatError(null, 'Mobil not found', 404));
+        }
+        
+        // Check if mobil is active
+        if (mobil.status !== 'active') {
+            await transaction.rollback();
+            return res.status(400).json(formatError(null, 'Mobil is not active', 400));
+        }
+        
+        // Check for existing active session for this driver
+        const existingDriverSession = await DriverMobilSession.findOne({
+            where: {
+                driver_id: driver.id,
+                status: 'active'
+            },
+            transaction
+        });
+        
+        // Check for existing active session for this mobil
+        const existingMobilSession = await DriverMobilSession.findOne({
+            where: {
+                mobil_id: device.mobil_id,
+                status: 'active'
+            },
+            transaction
+        });
+        
+        let session;
+        let action;
+        
+        if (existingDriverSession) {
+            // Driver has an active session - end it
+            await existingDriverSession.update({
+                end_time: new Date(),
+                status: 'completed'
+            }, { transaction });
+            
+            session = existingDriverSession;
+            action = 'ended';
+        } else if (existingMobilSession) {
+            // Another driver has active session on this mobil
+            await transaction.rollback();
+            return res.status(400).json(formatError(null, 'Another driver has an active session on this vehicle', 400));
+        } else {
+            // No active session - start new one
+            session = await DriverMobilSession.create({
+                driver_id: driver.id,
+                mobil_id: device.mobil_id,
+                start_time: new Date(),
+                end_time: null,
+                passenger_count: 0,
+                status: 'active'
+            }, { transaction });
+            
+            action = 'started';
+        }
+        
+        // Get the session with driver and mobil information
+        const sessionWithDetails = await DriverMobilSession.findByPk(session.id, {
+            include: [
+                {
+                    model: Driver,
+                    as: 'driver',
+                    attributes: ['id', 'nama_driver', 'rfid_code']
+                },
+                {
+                    model: Mobil,
+                    as: 'mobil',
+                    attributes: ['id', 'nomor_mobil']
+                }
+            ],
+            transaction
+        });
+        
+        // Commit transaction
+        await transaction.commit();
+        
+        return res.status(200).json(formatResponse({
+            session: sessionWithDetails,
+            action,
+            device_id: device.device_id,
+            message: `Session ${action} successfully`
+        }));
+        
+    } catch (error) {
+        // Rollback transaction on error
+        await transaction.rollback();
+        return res.status(500).json(formatError(error));
+    }
+};
+
 module.exports = {
     startSession,
     endSession,
     getActiveSessions,
     getSessionsByDriverId,
     getSessionById,
-    getSessionsByDateRange
+    getSessionsByDateRange,
+    handleRfidSession
 };

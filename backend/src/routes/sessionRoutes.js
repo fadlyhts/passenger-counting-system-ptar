@@ -6,7 +6,21 @@ const { validate } = require('../middleware/validation');
 
 const router = express.Router();
 
-// All session routes require authentication
+/**
+ * @route POST /api/session/rfid
+ * @desc Handle driver session via RFID tap (for ESP32)
+ * @access Public (for ESP32 devices)
+ */
+router.post(
+    '/rfid',
+    validate([
+        body('rfid_code').notEmpty().withMessage('RFID code is required'),
+        body('device_id').notEmpty().withMessage('Device ID is required')
+    ]),
+    sessionController.handleRfidSession
+);
+
+// All other session routes require authentication
 router.use(auth.verifyToken);
 
 /**

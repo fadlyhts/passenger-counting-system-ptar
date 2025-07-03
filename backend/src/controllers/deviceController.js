@@ -218,11 +218,88 @@ const updateDeviceStatus = async (req, res) => {
     }
 };
 
+/**
+ * Register device (for ESP32 auto-registration)
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const registerDevice = async (req, res) => {
+    try {
+        const { device_id, status } = req.body;
+        
+        // Find existing device
+        let device = await Device.findOne({ where: { device_id } });
+        
+        if (device) {
+            // Update existing device status
+            await device.update({
+                status: status || 'online',
+                last_sync: new Date()
+            });
+        } else {
+            // Device not found in database - this shouldn't happen in production
+            // but we'll return an error instead of auto-creating
+            return res.status(404).json(formatError(null, 'Device not registered in system. Please contact administrator.', 404));
+        }
+        
+        // Get the device with mobil information
+        const deviceWithMobil = await Device.findByPk(device.id, {
+            include: [
+                {
+                    model: Mobil,
+                    as: 'mobil',
+                    attributes: ['id', 'nomor_mobil', 'status']
+                }
+            ]
+        });
+        
+        return res.status(200).json(formatResponse(deviceWithMobil, 'Device registered successfully'));
+    } catch (error) {
+        return res.status(500).json(formatError(error));
+    }
+};
+
+/**
+ * Device heartbeat (for ESP32 periodic sync)
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const deviceHeartbeat = async (req, res) => {
+    try {
+        const { device_id, status, session_active, passenger_count } = req.body;
+        
+        // Find device
+        const device = await Device.findOne({ where: { device_id } });
+        
+        if (!device) {
+            return res.status(404).json(formatError(null, 'Device not found', 404));
+        }
+        
+        // Update device last_sync and status
+        await device.update({
+            status: status || 'online',
+            last_sync: new Date()
+        });
+        
+        return res.status(200).json(formatResponse({
+            device_id: device.device_id,
+            status: device.status,
+            last_sync: device.last_sync,
+            session_active: session_active || false,
+            passenger_count: passenger_count || 0
+        }, 'Heartbeat received'));
+    } catch (error) {
+        return res.status(500).json(formatError(error));
+    }
+};
+
 module.exports = {
     getAllDevices,
     getDeviceById,
     createDevice,
     updateDevice,
     deleteDevice,
-    updateDeviceStatus
+    updateDeviceStatus,
+    registerDevice,
+    deviceHeartbeat
 };

@@ -6,7 +6,37 @@ const { validate } = require('../middleware/validation');
 
 const router = express.Router();
 
-// All device routes require authentication
+/**
+ * @route POST /api/device/register
+ * @desc Register device (for ESP32 auto-registration)
+ * @access Public (for ESP32 devices)
+ */
+router.post(
+    '/register',
+    validate([
+        body('device_id').notEmpty().withMessage('Device ID is required'),
+        body('status').optional().isIn(['online', 'offline']).withMessage('Status must be online or offline')
+    ]),
+    deviceController.registerDevice
+);
+
+/**
+ * @route POST /api/device/heartbeat
+ * @desc Device heartbeat (for ESP32 periodic sync)
+ * @access Public (for ESP32 devices)
+ */
+router.post(
+    '/heartbeat',
+    validate([
+        body('device_id').notEmpty().withMessage('Device ID is required'),
+        body('status').optional().isIn(['online', 'offline']).withMessage('Status must be online or offline'),
+        body('session_active').optional().isBoolean().withMessage('Session active must be boolean'),
+        body('passenger_count').optional().isInt().withMessage('Passenger count must be integer')
+    ]),
+    deviceController.deviceHeartbeat
+);
+
+// All other device routes require authentication
 router.use(auth.verifyToken);
 
 /**

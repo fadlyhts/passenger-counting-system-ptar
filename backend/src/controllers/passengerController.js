@@ -37,7 +37,22 @@ const recordPassenger = async (req, res) => {
             last_sync: new Date()
         }, { transaction });
         
-        // Check if the same RFID has been recorded in the last 5 minutes
+        // Check if this is a driver card
+        const driver = await Driver.findOne({
+            where: { 
+                rfid_code,
+                status: 'active'
+            },
+            transaction
+        });
+        
+        if (driver) {
+            // This is a driver card - redirect to session management
+            await transaction.rollback();
+            return res.status(400).json(formatError(null, 'Driver cards should use session management endpoint', 400));
+        }
+        
+        // Check if the same RFID has been recorded in the last 5 minutes (only for passenger cards)
         const fiveMinutesAgo = new Date(new Date() - 5 * 60 * 1000);
         const recentRecord = await PassengerRecord.findOne({
             where: {

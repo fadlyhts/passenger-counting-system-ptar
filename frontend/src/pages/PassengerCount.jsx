@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import LineChart from '../components/LineChart';
-import { reportService, sessionService } from '../services';
+import { reportService, sessionService, passengerService } from '../services';
 
 const PassengerCount = () => {
   const [loading, setLoading] = useState(true);
@@ -33,6 +33,12 @@ const PassengerCount = () => {
   
   const [activeSessions, setActiveSessions] = useState([]);
   const [realtimeLoading, setRealtimeLoading] = useState(true);
+  
+  // Modal and passenger records state
+  const [showModal, setShowModal] = useState(false);
+  const [selectedSession, setSelectedSession] = useState(null);
+  const [passengerRecords, setPassengerRecords] = useState([]);
+  const [recordsLoading, setRecordsLoading] = useState(false);
 
   // Format date as YYYY-MM-DD
   const formatDate = (date) => {
@@ -61,6 +67,44 @@ const PassengerCount = () => {
     const diffDays = Math.floor(diffHours / 24);
     if (diffDays === 1) return '1 day ago';
     return `${diffDays} days ago`;
+  };
+
+  // Handle view passenger records
+  const handleViewRecords = async (session) => {
+    try {
+      setRecordsLoading(true);
+      setSelectedSession(session);
+      setShowModal(true);
+      
+      console.log('Fetching passenger records for session:', session.id);
+      const response = await passengerService.getPassengersBySessionId(session.id);
+      console.log('API Response:', response);
+      
+      // Extract passengers from response
+      let records = [];
+      if (response && response.passengers) {
+        records = Array.isArray(response.passengers) ? response.passengers : [];
+      } else if (response && response.data && response.data.passengers) {
+        records = Array.isArray(response.data.passengers) ? response.data.passengers : [];
+      } else if (Array.isArray(response)) {
+        records = response;
+      }
+      
+      console.log('Processed records:', records);
+      setPassengerRecords(records);
+    } catch (error) {
+      console.error('Error fetching passenger records:', error);
+      setPassengerRecords([]);
+    } finally {
+      setRecordsLoading(false);
+    }
+  };
+
+  // Close modal
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedSession(null);
+    setPassengerRecords([]);
   };
 
   // Fetch chart data function
@@ -466,7 +510,9 @@ const PassengerCount = () => {
                         textAlign: 'center'
                       }}>
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                          <button style={{
+                          <button 
+                            onClick={() => handleViewRecords(session)}
+                            style={{
                             backgroundColor: '#2196F3',
                             color: 'white',
                             border: 'none',
@@ -520,6 +566,244 @@ const PassengerCount = () => {
         </div>
       </div>
       </div>
+      
+      {/* Passenger Records Modal */}
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+            width: '90%',
+            maxWidth: '600px',
+            padding: '20px',
+            position: 'relative'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '15px'
+            }}>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#333',
+                margin: '0'
+              }}>
+                Passenger Records
+              </h3>
+              <button 
+                onClick={handleCloseModal}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: '#666',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  fontWeight: 'bold'
+                }}
+                title="Close"
+              >
+                &times;
+              </button>
+            </div>
+            
+            {recordsLoading ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+                Loading passenger records...
+              </div>
+            ) : (
+              <div>
+                {passengerRecords.length > 0 ? (
+                  <div>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(4, 1fr)',
+                      gap: '10px',
+                      marginBottom: '20px'
+                    }}>
+                      <div style={{
+                        gridColumn: 'span 4',
+                        backgroundColor: '#f0f8ff',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        border: '1px solid #b0e0f0',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: '#333'
+                      }}>
+                        Session ID: {selectedSession?.id}
+                      </div>
+                      
+                      <div style={{
+                        backgroundColor: 'white',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        border: '1px solid #ddd',
+                        fontSize: '14px',
+                        color: '#333'
+                      }}>
+                        <strong>Vehicle ID:</strong> {selectedSession?.mobil?.nomor_mobil || 'Unknown'}
+                      </div>
+                      
+                      <div style={{
+                        backgroundColor: 'white',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        border: '1px solid #ddd',
+                        fontSize: '14px',
+                        color: '#333'
+                      }}>
+                        <strong>Driver:</strong> {selectedSession?.driver?.nama_driver || 'Unknown'}
+                      </div>
+                      
+                      <div style={{
+                        backgroundColor: 'white',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        border: '1px solid #ddd',
+                        fontSize: '14px',
+                        color: '#333'
+                      }}>
+                        <strong>Start Time:</strong> {new Date(selectedSession?.start_time).toLocaleString()}
+                      </div>
+                      
+                      <div style={{
+                        backgroundColor: 'white',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        border: '1px solid #ddd',
+                        fontSize: '14px',
+                        color: '#333'
+                      }}>
+                        <strong>End Time:</strong> {selectedSession?.end_time ? new Date(selectedSession.end_time).toLocaleString() : 'N/A'}
+                      </div>
+                      
+                      <div style={{
+                        backgroundColor: 'white',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        border: '1px solid #ddd',
+                        fontSize: '14px',
+                        color: '#333'
+                      }}>
+                        <strong>Total Passengers:</strong> {selectedSession?.passenger_count || 0}
+                      </div>
+                    </div>
+                    
+                    <div style={{
+                      marginBottom: '15px',
+                      fontSize: '14px',
+                      color: '#333'
+                    }}>
+                      <strong>Passenger List:</strong>
+                    </div>
+                    
+                    <table style={{
+                      width: '100%',
+                      borderCollapse: 'collapse',
+                      marginBottom: '20px'
+                    }}>
+                      <thead>
+                        <tr style={{ borderBottom: '2px solid #eee' }}>
+                          <th style={{
+                            padding: '10px',
+                            textAlign: 'left',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            color: '#666'
+                          }}>
+                            ID
+                          </th>
+                          <th style={{
+                            padding: '10px',
+                            textAlign: 'left',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            color: '#666'
+                          }}>
+                            RFID Code
+                          </th>
+                          <th style={{
+                            padding: '10px',
+                            textAlign: 'left',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            color: '#666'
+                          }}>
+                            Timestamp
+                          </th>
+                          <th style={{
+                            padding: '10px',
+                            textAlign: 'left',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            color: '#666'
+                          }}>
+                            Created At
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {passengerRecords.map((record) => (
+                          <tr key={record.id} style={{
+                            borderBottom: '1px solid #eee'
+                          }}>
+                            <td style={{
+                              padding: '10px',
+                              fontSize: '14px',
+                              color: '#333'
+                            }}>
+                              {record.id}
+                            </td>
+                            <td style={{
+                              padding: '10px',
+                              fontSize: '14px',
+                              color: '#333'
+                            }}>
+                              {record.rfid_code}
+                            </td>
+                            <td style={{
+                              padding: '10px',
+                              fontSize: '14px',
+                              color: '#333'
+                            }}>
+                              {new Date(record.timestamp).toLocaleString()}
+                            </td>
+                            <td style={{
+                              padding: '10px',
+                              fontSize: '14px',
+                              color: '#333'
+                            }}>
+                              {new Date(record.created_at).toLocaleString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+                    No passenger records found for this session.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

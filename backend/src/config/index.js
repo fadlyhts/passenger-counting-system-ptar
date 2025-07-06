@@ -15,5 +15,8 @@ module.exports = {
         secret: process.env.JWT_SECRET || 'your_jwt_secret_key',
         expiration: process.env.JWT_EXPIRATION || '1h'
     },
+    device: {
+        apiKey: process.env.DEVICE_API_KEY || 'esp32-device-key-2024'
+    },
     nodeEnv: process.env.NODE_ENV || 'development'
 };

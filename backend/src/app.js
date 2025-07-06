@@ -40,11 +40,9 @@ const startServer = async () => {
         await sequelize.authenticate();
         console.log('Database connection has been established successfully.');
         
-        // Sync database models (in development)
-        if (process.env.NODE_ENV === 'development') {
-            await sequelize.sync({ alter: true });
-            console.log('Database models synchronized.');
-        }
+        // Skip database sync to avoid altering existing tables
+        // If you need to create new tables, run migrations manually
+        console.log('Skipping database sync to prevent key conflicts.');
         
         // Start server
         app.listen(PORT, () => {

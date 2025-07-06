@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const { errorHandler, notFound } = require('./errorHandler');
 const auth = require('./auth');
 const validation = require('./validation');
+const deviceAuth = require('./deviceAuth');
 
 const router = express.Router();
 
@@ -21,6 +22,7 @@ module.exports = {
     router,
     auth,
     validation,
+    deviceAuth,
     errorHandler,
     notFound
 };

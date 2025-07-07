@@ -263,26 +263,29 @@ const Reports = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="p-6">
         {/* Header */}
-        <div className="mb-6">
-          <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#333', margin: '0 0 8px 0' }}>Reports & Analytics</h1>
-          <p className="text-gray-600">Analyze passenger data and system performance</p>
-        </div>
-
-        {/* Report Type Selection */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="flex flex-wrap gap-4 items-center">
-            <div className="flex space-x-1">
-              <button
-                className="px-4 py-2 rounded-md text-sm font-medium bg-blue-600 text-white"
-              >
-                Driver Report
-              </button>
+        <div style={{ marginBottom: '20px', paddingBottom: '10px', borderBottom: '1px solid #eee' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#333', margin: '0 0 8px 0' }}>Reports & Analytics</h1>
+              <p className="text-gray-600">Analyze passenger data and system performance</p>
             </div>
-
             <button
               onClick={exportReport}
               data-export-button
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              style={{
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'background-color 0.3s'
+              }}
+              title="Export report to PDF"
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#45a049'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#4CAF50'}
             >
               Export to PDF
             </button>

@@ -607,7 +607,6 @@ const Sessions = () => {
                       <th className="text-left py-3 px-4 font-bold text-gray-900 text-sm">Duration</th>
                       <th className="text-left py-3 px-4 font-bold text-gray-900 text-sm">Passengers</th>
                       <th className="text-left py-3 px-4 font-bold text-gray-900 text-sm">Status</th>
-                      <th className="text-left py-3 px-4 font-bold text-gray-900 text-sm">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -641,18 +640,6 @@ const Sessions = () => {
                           }}>
                             {session.status === 'active' ? 'Active' : 'Completed'}
                           </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex space-x-2">
-                            {session.status === 'active' && (
-                              <button
-                                onClick={() => handleOpenEndModal(session.id)}
-                                className="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded hover:bg-red-700 transition-colors duration-200"
-                              >
-                                End Session
-                              </button>
-                            )}
-                          </div>
                         </td>
                       </tr>
                     ))}

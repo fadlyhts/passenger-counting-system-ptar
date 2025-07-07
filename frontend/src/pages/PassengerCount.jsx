@@ -528,22 +528,7 @@ const PassengerCount = () => {
                           >
                             View
                           </button>
-                          <button style={{
-                            backgroundColor: '#ff9800',
-                            color: 'white',
-                            border: 'none',
-                            padding: '6px 12px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            transition: 'background-color 0.3s'
-                          }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f57c00'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = '#ff9800'}
-                          >
-                            Details
-                          </button>
+
                         </div>
                       </td>
                     </tr>
